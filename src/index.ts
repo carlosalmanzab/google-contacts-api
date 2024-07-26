@@ -25,28 +25,25 @@ app.get("/auth/google/redirect", async (req: Request, res: Response) => {
   });
 });
 
-app.post(
-  "/google/contacts/create-contact",
-  async (req: Request, res: Response) => {
-    console.log(req.body);
+app.post("/google/contacts", async (req: Request, res: Response) => {
+  console.log(req.body);
 
-    try {
-      const exists = await doesContactExistByPhoneNumber(req.body.phoneNumber);
+  try {
+    const exists = await doesContactExistByPhoneNumber(req.body.phoneNumber);
 
-      if (exists) {
-        return res
-          .status(409)
-          .send({ msg: "El contacto ya existe en Google Contacts" });
-      }
-
-      const response = await createContact(req.body);
-      res.send(response);
-    } catch (error) {
-      console.error("Error:", error);
-      res.status(503).send({ error: "Error al crear el contacto" });
+    if (exists) {
+      return res
+        .status(409)
+        .send({ msg: "El contacto ya existe en Google Contacts" });
     }
+
+    const response = await createContact(req.body);
+    res.status(201).send(response);
+  } catch (error) {
+    console.error("Error:", error);
+    res.status(503).send({ error: "Error al crear el contacto" });
   }
-);
+});
 
 app.listen(env.APP_PORT, () => {
   console.log(`Server is running on http://localhost:${env.APP_PORT}`);
