@@ -1,4 +1,3 @@
-import { Response } from "express";
 import { googleOAuth2Client, googlePeople } from "../settings";
 
 export const createContact = async ({
@@ -11,7 +10,13 @@ export const createContact = async ({
   phoneNumber: string;
 }) => {
   const requestBody = {
-    names: [{ firstName, lastName, displayName: `${firstName} ${lastName}` }],
+    names: [
+      {
+        givenName: firstName,
+        familyName: lastName,
+        displayName: `${firstName} ${lastName}`,
+      },
+    ],
     phoneNumbers: [{ value: phoneNumber }],
   };
 
@@ -38,9 +43,13 @@ export const doesContactExistByPhoneNumber = async (
       personFields: "phoneNumbers",
     });
 
+    const { connections } = response.data;
+
     return (
-      response.data.connections?.some(({ phoneNumbers }) =>
-        phoneNumbers?.some(({ value }) => value === phoneNumber)
+      connections?.some(({ phoneNumbers }) =>
+        phoneNumbers?.some(({ canonicalForm }) =>
+          canonicalForm?.includes(phoneNumber)
+        )
       ) ?? false
     );
   } catch (error) {
